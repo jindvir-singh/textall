@@ -1,0 +1,11 @@
+{
+  "name": "anonymouschat",
+  "version": "1.0.0",
+  "description": "Chat app for anonymous people built on socket.io",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jindvir Singh",
+  "license": "ISC"
+}
