@@ -1,11 +1,20 @@
 {
   "name": "anonymouschat",
   "version": "1.0.0",
+  "type": "module",
   "description": "Chat app for anonymous people built on socket.io",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jindvir Singh",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.6.0",
+    "mongoose": "^8.13.1",
+    "socket.io": "^4.8.1"
+  }
 }
