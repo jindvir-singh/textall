@@ -9,7 +9,13 @@
         /* Reset and Body Styling */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #f0f0f5;
+            /* background: url('/assets/chat-background.png') no-repeat center center; */
+            background-size: cover;
+            /* Ensures the image covers the entire screen, cropping if necessary */
+            background-position: center;
+            /* Keeps the image centered */
+            background-color: #ffffff;
+            /* Fallback color */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -17,6 +23,9 @@
             height: 100vh;
             margin: 0;
         }
+
+
+
 
         h1 {
             font-size: 2rem;
@@ -26,13 +35,60 @@
         }
 
         /* Chat App Container */
+
         .app-container {
+            width: 100%;
+            height: 100vh;
+        }
+
+        #user-auth {
+            text-align: center;
             width: 100%;
             max-width: 350px;
             padding: 2rem;
+            background: #e6f0ff;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #create-room-container {
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            padding: 2rem;
+            background: #e6f0ff;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, -50%);
+        }
+
+        #rooms-container {
+            padding: 2rem;
+            margin: 2rem;
+            height: 65%;
             background: rgba(255, 255, 255, 0.8);
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: scroll;
+        }
+
+        #chat-container {
+            padding: 2rem;
+            margin: 2rem;
+            height: 65%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: scroll;
         }
 
         .hidden {
@@ -41,14 +97,55 @@
 
         /* Input and Button Styling */
         #username {
-            padding: 0.5rem;
+            padding: 1rem;
             border-radius: 8px;
-            border: 1px solid #ddd;
-            width: 100%;
-            font-size: 1.1rem;
+            border: none;
+            width: 90%;
+            font-size: 1rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            -webkit-text-fill-color: #333 !important;
+            /* Prevents autofill color change */
+            background-color: white !important;
+            /* Ensures background doesn't change */
+            transition: background-color 0s ease-in-out;
+            /* Disables background transition */
         }
 
-        #join-btn {
+        #room-name {
+            padding: 1rem;
+            border-radius: 8px;
+            border: none;
+            width: 90%;
+            font-size: 1rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            -webkit-text-fill-color: #333 !important;
+            /* Prevents autofill color change */
+            background-color: white !important;
+            /* Ensures background doesn't change */
+            transition: background-color 0s ease-in-out;
+            /* Disables background transition */
+        }
+
+        #max-members {
+            padding: 1rem;
+            border-radius: 8px;
+            border: none;
+            width: 90%;
+            font-size: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            -webkit-text-fill-color: #333 !important;
+            /* Prevents autofill color change */
+            background-color: white !important;
+            /* Ensures background doesn't change */
+            transition: background-color 0s ease-in-out;
+            /* Disables background transition */
+        }
+
+        #join-btn,
+        #submit-room-btn {
             background-color: #4f8deb;
             color: white;
             padding: 0.8rem;
@@ -60,7 +157,8 @@
             border: none;
         }
 
-        #join-btn:hover {
+        #join-btn:hover,
+        #submit-room-btn:hover {
             background-color: #3584c4;
         }
 
@@ -119,29 +217,71 @@
         }
 
         /* Message List */
+
+
+
+
         #messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             list-style: none;
             padding: 0;
             margin: 1.5rem 0;
             overflow-y: auto;
-            max-height: 300px;
         }
 
         #messages li {
-            padding: 1rem;
-            background-color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 1rem;
+            max-width: 80%;
+            padding: 10px;
             border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .received {
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            align-self: flex-start;
+        }
+
+        .sent {
+            background-color: #4f8deb;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        /* Ensures long words wrap properly */
+
+
+        .room-card {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #f5f5f5;
+            /* Light background */
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: inline-block;
+            /* Ensures it only takes necessary width */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow */
+            color: #333;
         }
 
         /* Input and Send Button */
         #input {
-            width: calc(100% - 100px);
+            width: calc(100% - 200px);
             padding: 0.8rem;
             border-radius: 12px;
             font-size: 1rem;
             border: 1px solid #ddd;
             margin-right: 8px;
+        }
+
+        form {
+            width: 95%;
+            position: absolute;
+            bottom: 5%;
         }
 
         #form button {
@@ -158,14 +298,171 @@
         #form button:hover {
             background-color: #3584c4;
         }
+
+        #leave-room,
+        #create-room-btn {
+            position: absolute;
+            top: 3%;
+            right: 3%;
+            padding: 0.8rem 1.5rem;
+            background-color: #4f8deb;
+            color: white;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        #leave-room:hover {
+            background-color: red;
+        }
+
+
+        .gender-container {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            flex-direction: row;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .gender-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .gender-label input {
+            display: none;
+        }
+
+        .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #888;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .custom-radio::after {
+            content: "";
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .gender-label input:checked+.custom-radio {
+            border-color: #4f8deb;
+        }
+
+        .gender-label input:checked+.custom-radio::after {
+            background: #4f8deb;
+        }
+
+        .gender-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .terms-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            width: fit-content;
+            margin-top: 15px;
+        }
+
+        .terms-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .terms-label input {
+            display: none;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #888;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox::after {
+            content: "✔";
+            font-size: 14px;
+            color: transparent;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .terms-label input:checked+.custom-checkbox {
+            border-color: #4f8deb;
+            background: #4f8deb;
+        }
+
+        .terms-label input:checked+.custom-checkbox::after {
+            color: white;
+        }
     </style>
 </head>
 
 <body>
     <div class="app-container">
         <h1>texall.</h1>
+        <button class="hidden" id="leave-room">Leave Room</button>
         <div id="user-auth">
+            <img src="../assets/user-icon.png" height="75" width="75" />
             <input type="text" id="username" placeholder="Enter your username" />
+            <div class="gender-container">
+                <label class="gender-title">Gender:</label>
+
+                <label class="gender-label">
+                    <input type="radio" name="gender" value="male">
+                    <div class="custom-radio"></div>
+                    Male
+                </label>
+
+                <label class="gender-label">
+                    <input type="radio" name="gender" value="female">
+                    <div class="custom-radio"></div>
+                    Female
+                </label>
+            </div>
+            <div class="terms-container">
+                <label class="terms-label">
+                    <input type="checkbox" id="agree">
+                    <div class="custom-checkbox"></div>
+                    I agree to the <a href="#" style="color: #4f8deb; text-decoration: none;">Terms and Conditions</a>
+                </label>
+            </div>
             <button id="join-btn">Join Chat</button>
         </div>
 
@@ -176,14 +473,31 @@
         </div>
 
         <div id="chat-container" class="hidden">
-            <h2>Chat Room: <span id="current-room">None</span></h2>
+            <h2 class="room-card">Chat Room: <span id="current-room">None</span></h2>
             <ul id="messages"></ul>
             <form id="form">
                 <input id="input" autocomplete="off" placeholder="Type a message..." />
                 <button>Send</button>
             </form>
         </div>
+
+        <div id="create-room-container" class="hidden">
+            <img src="../assets/group.png" height="75" width="75" />
+            <h3>Create a New Room</h3>
+
+            <!-- Room Name Input -->
+            <input type="text" id="room-name" placeholder="Enter room name" required />
+
+            <!-- Max Members Input -->
+            <input type="number" id="max-members" min="1" placeholder="Enter max number of members" required />
+
+            <!-- Submit Button -->
+            <button id="submit-room-btn">Submit</button>
+        </div>
+
     </div>
+
+
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -197,20 +511,74 @@
         const messagesList = document.getElementById('messages');
         const inputField = document.getElementById('input');
         const currentRoomSpan = document.getElementById('current-room');
+        const leaveRoom = document.getElementById("leave-room");
+
+        const selectedGender = document.querySelector('input[name="gender"]:checked');
+        const termsCheckbox = document.getElementById("agree").checked;
+
+
 
         let currentUsername = null;
         let currentRoom = null;
 
+       // Assuming currentRoom holds the name of the room the user is currently in
+leaveRoom.addEventListener('click', () => {
+    if (currentRoom) {
+        // Emit leave room event with currentRoom name
+        socket.emit('leave room', currentRoom);
+
+        // Update UI after leaving the room
+        chatContainer.classList.add('hidden');
+        leaveRoom.classList.add('hidden');
+        roomsContainer.classList.remove('hidden');
+        
+        // Optionally, reset currentRoom variable
+        currentRoom = null; // or set it to an empty value
+    } else {
+        console.log("No room to leave.");
+    }
+});
+
+
+        // Join chat when user submits username
         // Join chat when user submits username
         joinBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
-            if (username) {
-                currentUsername = username;
-                socket.emit('user join', currentUsername);
-                document.getElementById('user-auth').classList.add('hidden');
-                roomsContainer.classList.remove('hidden');
+            const selectedGender = document.querySelector('input[name="gender"]:checked');
+            const termsCheckbox = document.getElementById("agree").checked;
+
+            if (!username) {
+                alert("Please enter a username.");
+                return;
             }
+
+            if (!selectedGender) {
+                alert("Please select a gender.");
+                return;
+            }
+
+            if (!termsCheckbox) {
+                alert("You must agree to the Terms and Conditions.");
+                return;
+            }
+
+            // Create a JSON object with username and gender
+            const userData = {
+                username: username,
+                gender: selectedGender.value
+            };
+
+            // Send the JSON data to the server
+            socket.emit('user join', userData);
+            currentUsername = username;
+            // Hide auth section and show chat rooms
+            document.getElementById('user-auth').classList.add('hidden');
+            roomsContainer.classList.remove('hidden');
+
+            alert(`Welcome, ${username}!\nGender: ${selectedGender.value}\nAgreed to Terms: Yes`);
         });
+
+
 
         // Display available rooms with card-style UI
         socket.on('rooms', (rooms) => {
@@ -231,24 +599,72 @@
         socket.on('chat message', (data) => {
             const { username, content } = data;
             const li = document.createElement('li');
-            li.textContent = `${username}: ${content}`;
+
+            // Check if the message is from the current user
+            if (username === currentUsername) {
+                li.classList.add('sent'); // Apply right alignment for own messages
+                li.textContent = `${content}`;
+
+            } else {
+                li.classList.add('received'); // Apply left alignment for others
+                li.textContent = `${username}: ${content}`;
+
+            }
+
+            // Append the message to the list
             messagesList.appendChild(li);
         });
 
-        // Create a new room
+
+
+        // Show the room creation container when the button is clicked
         createRoomBtn.addEventListener('click', () => {
-            const roomName = prompt('Enter the new room name:');
-            if (roomName) {
-                socket.emit('create room', roomName);
+            // Show the container
+            document.getElementById('create-room-container').style.display = 'flex';
+        });
+
+        // Handle form submission for creating a new room
+        document.getElementById('submit-room-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const roomName = document.getElementById('room-name').value.trim();
+            const maxMembers = parseInt(document.getElementById('max-members').value.trim(), 10);
+
+            // Ensure the room name and max members are provided
+            if (roomName && maxMembers > 0) {
+                // Emit the room creation event with the room name and max members
+                // Create the data object
+                const roomData = {
+                    roomName: roomName,
+                    maxMembers: maxMembers
+                };
+
+                // Convert the object to a JSON string and send it
+                socket.emit('create room', JSON.stringify(roomData));
+
+                // Optionally, hide the room creation container after creation
+                document.getElementById('create-room-container').style.display = 'none';
+                alert("Room created successfully!");
+            } else {
+                alert("Please fill in both fields with valid data.");
             }
         });
 
+        // Optional: If you want to close the room creation container, add a cancel button
+        // Assuming you have a "cancel" button inside the container to hide it
+        // document.getElementById('cancel-btn').addEventListener('click', () => {
+        //     document.getElementById('create-room-container').style.display = 'none';
+        // });
+
+
         // Join a selected room
         function joinRoom(roomName) {
+
             currentRoom = roomName;
             socket.emit('join room', roomName);
             currentRoomSpan.textContent = roomName;
             chatContainer.classList.remove('hidden');
+            leaveRoom.classList.remove('hidden');
             roomsContainer.classList.add('hidden');
             loadMessages(roomName);
         }

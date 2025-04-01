@@ -16,6 +16,8 @@ const io = new Server(server);
 let rooms = {};  // Object to store room info
 let users = {};  // Object to store user info
 
+app.use('/assets', express.static('assets'));
+
 app.get('/', (req, res) => {
     res.sendFile(join(process.cwd(), 'views', 'index.html')); // Serve the HTML page
 });
@@ -23,68 +25,121 @@ app.get('/', (req, res) => {
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log('a user connected');
-    
+
     let currentUser = null;
 
     // User joins chat by providing a username
-    socket.on('user join', (username) => {
+    // User joins chat by providing a username and gender
+    socket.on('user join', (userData) => {
+        const { username, gender } = userData;  // Extract username and gender from the received JSON
+
+        if (!username || !gender) {
+            // Handle the case if username or gender is missing
+            socket.emit('error', 'Username and Gender are required.');
+            return;
+        }
+
+        // Store user data (username and gender)
         currentUser = username;
-        users[socket.id] = username;
-        console.log(`${username} has joined the chat`);
-        io.emit('user joined', `${username} has joined the chat.`);
-        io.emit('rooms', Object.keys(rooms)); // Send updated list of rooms
+        users[socket.id] = { username, gender };  // Save both username and gender for the user
+
+        console.log(`${username} (${gender}) has joined the chat`);
+
+        // Emit the message that the user has joined
+        io.emit('user joined', `${username} (${gender}) has joined the chat.`);
+
+        // Send the updated list of rooms
+        io.emit('rooms', Object.keys(rooms));  // This sends the updated list of rooms to all clients
     });
 
     // User sends a message to a specific room
+    // User sends a message to a specific room
     socket.on('chat message', (data) => {
+        // Destructure the roomId and content from the incoming data
         const { roomId, content } = data;
-        const username = users[socket.id];
 
+        // Retrieve the user object based on socket.id
+        const user = users[socket.id];
+
+        if (!user) {
+            // If the user is not found, log and return early
+            console.log("User not found.");
+            return;
+        }
+
+        const username = user.username;  // Extract the username from the user object
+
+        // Check if the room exists
         if (rooms[roomId]) {
+            // Add the new message to the room's message history
             rooms[roomId].messages.push({ username, content });
+
+            // Emit the new message to all clients in the room
             io.to(roomId).emit('chat message', { username, content });
+        } else {
+            // If room doesn't exist, log a warning (optional)
+            console.log(`Room ${roomId} does not exist.`);
         }
     });
 
+
+
     // User creates a new room
-    socket.on('create room', (roomName) => {
+    // Server-side event to handle room creation
+    socket.on('create room', (data) => {
+        // Parse the JSON string into an object (optional if already an object)
+        const roomData = JSON.parse(data);
+        const { roomName, maxMembers } = roomData;
+
+        // Check if the room already exists
         if (!rooms[roomName]) {
-            rooms[roomName] = { members: [], messages: [] }; // Create a new room with no members or messages initially
-            io.emit('rooms', Object.keys(rooms)); // Notify all users about the new room
+            // Create the new room with max members
+            rooms[roomName] = {
+                members: [], // Initial empty array of members
+                maxMembers: maxMembers, // Store the max number of members for the room
+                messages: [] // Initial empty array of messages
+            };
+
+            // Notify all users about the new room
+            io.emit('rooms', Object.keys(rooms)); // Send the updated list of room names
         } else {
+            // If the room already exists, emit an error message
             socket.emit('error', 'Room already exists');
         }
     });
+
 
     // User joins a room
     socket.on('join room', (roomName) => {
         if (rooms[roomName]) {
             rooms[roomName].members.push(socket.id);
             socket.join(roomName);
-            io.to(roomName).emit('chat message', {
-                username: 'System',
-                content: `${users[socket.id]} has joined the room.`,
-            });
+            // io.to(roomName).emit('chat message', {
+            //     username: 'System',
+            //     content: `${users[socket.id]} has joined the room.`,
+            // });
             socket.emit('joined room', roomName);
         } else {
             socket.emit('error', 'Room does not exist');
         }
     });
 
-    // User leaves a room
-    socket.on('leave room', (roomName) => {
-        if (rooms[roomName]) {
-            const index = rooms[roomName].members.indexOf(socket.id);
-            if (index !== -1) {
-                rooms[roomName].members.splice(index, 1);
-                socket.leave(roomName);
-                io.to(roomName).emit('chat message', {
-                    username: 'System',
-                    content: `${users[socket.id]} has left the room.`,
-                });
-            }
+   // User leaves a room
+socket.on('leave room', (roomName) => {
+    if (rooms[roomName]) {
+        const index = rooms[roomName].members.indexOf(socket.id);
+        if (index !== -1) {
+            rooms[roomName].members.splice(index, 1);
+            socket.leave(roomName);
+            io.to(roomName).emit('chat message', {
+                username: 'System',
+                content: `${users[socket.id].username} has left the room.`,
+            });
+            io.emit('rooms', Object.keys(rooms)); // Emit updated room list
         }
-    });
+    }
+});
+
 
     // Disconnecting the user
     socket.on('disconnect', () => {
