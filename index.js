@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { join } from 'path';
-
+import {_connection} from './connection.js'
+import router from './routes/userAccount.js';
 // Load environment variables
 dotenv.config();
 
@@ -12,6 +13,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
+_connection();
 // Store rooms and their members in memory
 let rooms = {};  // Object to store room info
 let users = {};  // Object to store user info
@@ -22,6 +24,7 @@ app.get('/', (req, res) => {
     res.sendFile(join(process.cwd(), 'views', 'index.html')); // Serve the HTML page
 });
 
+app.post('/createAccount', router)
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log('a user connected');

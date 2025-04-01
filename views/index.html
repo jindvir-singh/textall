@@ -9,11 +9,6 @@
         /* Reset and Body Styling */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            /* background: url('/assets/chat-background.png') no-repeat center center; */
-            background-size: cover;
-            /* Ensures the image covers the entire screen, cropping if necessary */
-            background-position: center;
-            /* Keeps the image centered */
             background-color: #ffffff;
             /* Fallback color */
             display: flex;
@@ -22,7 +17,27 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            position: relative;
         }
+
+        /* Background Applied */
+        .bg-active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('/assets/Display.png') no-repeat center center;
+            background-size: cover;
+            transform: scaleX(-1);
+            /* Inverts the background image horizontally */
+            z-index: -1;
+            /* Ensures the image stays behind the content */
+        }
+
+        /* Ensures the image stays behind the content */
+
 
 
 
@@ -41,7 +56,16 @@
             height: 100vh;
         }
 
-        #user-auth {
+        #account-options {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            /* Adjust this value to move it more to the right */
+            transform: translate(-50%, -50%);
+        }
+
+        #user-auth,
+        #user-create {
             text-align: center;
             width: 100%;
             max-width: 350px;
@@ -96,13 +120,16 @@
         }
 
         /* Input and Button Styling */
-        #username {
+        #signup-username,
+        #username,
+        #email,
+        #password {
             padding: 1rem;
             border-radius: 8px;
             border: none;
             width: 90%;
             font-size: 1rem;
-            margin-top: 2rem;
+            margin-top: 1rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             -webkit-text-fill-color: #333 !important;
             /* Prevents autofill color change */
@@ -111,6 +138,8 @@
             transition: background-color 0s ease-in-out;
             /* Disables background transition */
         }
+
+       
 
         #room-name {
             padding: 1rem;
@@ -147,6 +176,31 @@
         #join-btn,
         #submit-room-btn {
             background-color: #4f8deb;
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            width: 100%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        #create-account-btn {
+            background-color: #4f8deb;
+            color: white;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            width: 100%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+        }
+
+
+        .back-btn {
+            background-color: #222222;
             color: white;
             padding: 0.8rem;
             border-radius: 8px;
@@ -431,14 +485,99 @@
         .terms-label input:checked+.custom-checkbox::after {
             color: white;
         }
+
+
+        #personal-account,
+        #anonymous-account {
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            outline: none;
+            margin: 3px;
+        }
+
+        #personal-account:hover,
+        #anonymous-account:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+        }
+
+        #personal-account:focus,
+        #anonymous-account:focus {
+            outline: none;
+        }
+
+        #personal-account {
+            background-color: #007BFF;
+        }
+
+        #personal-account:hover {
+            background-color: #0056b3;
+        }
+
+        #anonymous-account {
+            background-color: #28a745;
+        }
+
+        #anonymous-account:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 
-<body>
+<body class="bg-active">
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <div class="app-container">
         <h1>texall.</h1>
         <button class="hidden" id="leave-room">Leave Room</button>
-        <div id="user-auth">
+
+        <div id="account-options">
+            <dotlottie-player src="https://lottie.host/b8bcc87d-fcfd-440c-8d43-9cad8e084c14/ueittz6VHy.lottie"
+                background="transparent" speed="1" style="width: 450px; height: 450px; margin-top: -5%;" loop
+                autoplay></dotlottie-player>
+            <button id="personal-account">Create Account</button>
+            <button id="anonymous-account">Chat Anonymous Now</button>
+        </div>
+
+
+        <div id="user-create" class="hidden">
+            <img src="../assets/user-icon.png" height="75" width="75" />
+            <input type="text" id="signup-username" placeholder="Enter your username" />
+            <input type="email" id="email" placeholder="Enter your email" />
+            <input type="password" id="password" placeholder="Enter your password" />
+            <div class="gender-container">
+                <label class="gender-title">Gender:</label>
+
+                <label class="gender-label">
+                    <input type="radio" name="gender" value="male">
+                    <div class="custom-radio"></div>
+                    Male
+                </label>
+
+                <label class="gender-label">
+                    <input type="radio" name="gender" value="female">
+                    <div class="custom-radio"></div>
+                    Female
+                </label>
+            </div>
+            <!-- <div class="terms-container">
+                <label class="terms-label">
+                    <input type="checkbox" id="agree">
+                    <div class="custom-checkbox"></div>
+                    I agree to the <a href="#" style="color: #4f8deb; text-decoration: none;">Terms and Conditions</a>
+                </label>
+            </div> -->
+            <button id="create-account-btn">Signup</button>
+            <button class="back-btn" onclick="backButtonFunction()">Go Back</button>
+
+        </div>
+
+        <div id="user-auth" class="hidden">
             <img src="../assets/user-icon.png" height="75" width="75" />
             <input type="text" id="username" placeholder="Enter your username" />
             <div class="gender-container">
@@ -464,6 +603,7 @@
                 </label>
             </div>
             <button id="join-btn">Join Chat</button>
+            <button class="back-btn" onclick="backButtonFunction()">Go Back</button>
         </div>
 
         <div id="rooms-container" class="hidden">
@@ -512,6 +652,11 @@
         const inputField = document.getElementById('input');
         const currentRoomSpan = document.getElementById('current-room');
         const leaveRoom = document.getElementById("leave-room");
+        const createPersonalAccount = document.getElementById("personal-account");
+        const joinAnonymousAccount = document.getElementById("anonymous-account");
+        const goBackButton = document.querySelector(".back-btn"); // Selects the first element with this class
+        const signupAccountButton = document.getElementById("create-account-btn");
+        const signupUserDiv = document.getElementById("user-create");
 
         const selectedGender = document.querySelector('input[name="gender"]:checked');
         const termsCheckbox = document.getElementById("agree").checked;
@@ -521,23 +666,90 @@
         let currentUsername = null;
         let currentRoom = null;
 
-       // Assuming currentRoom holds the name of the room the user is currently in
-leaveRoom.addEventListener('click', () => {
-    if (currentRoom) {
-        // Emit leave room event with currentRoom name
-        socket.emit('leave room', currentRoom);
+        function removeBg() {
+            document.body.classList.remove("bg-active");
+        }
 
-        // Update UI after leaving the room
-        chatContainer.classList.add('hidden');
-        leaveRoom.classList.add('hidden');
-        roomsContainer.classList.remove('hidden');
+        function addBg() {
+            document.body.classList.add("bg-active");
+        }
+
+        joinAnonymousAccount.addEventListener('click', () => {
+            document.getElementById('user-auth').classList.remove('hidden');
+            document.getElementById('account-options').classList.add('hidden');
+            removeBg();
+        })
+        // goBackButton.addEventListener('click', () => {
         
-        // Optionally, reset currentRoom variable
-        currentRoom = null; // or set it to an empty value
-    } else {
-        console.log("No room to leave.");
-    }
-});
+        // });
+
+        function backButtonFunction(){
+            document.getElementById('user-auth').classList.add('hidden');
+            signupUserDiv.classList.add('hidden');
+            document.getElementById('account-options').classList.remove('hidden');
+            addBg();
+        }
+
+
+        createPersonalAccount.addEventListener('click', () => {
+            signupUserDiv.classList.remove('hidden');
+            document.getElementById('account-options').classList.add('hidden');
+            removeBg();
+        })
+        // Assuming currentRoom holds the name of the room the user is currently in
+        leaveRoom.addEventListener('click', () => {
+            if (currentRoom) {
+                // Emit leave room event with currentRoom name
+                socket.emit('leave room', currentRoom);
+
+                // Update UI after leaving the room
+                chatContainer.classList.add('hidden');
+                leaveRoom.classList.add('hidden');
+                roomsContainer.classList.remove('hidden');
+
+                // Optionally, reset currentRoom variable
+                currentRoom = null; // or set it to an empty value
+            } else {
+                console.log("No room to leave.");
+            }
+        });
+
+        signupAccountButton.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const selectedGender = document.querySelector('input[name="gender"]:checked');
+            const termsCheckbox = document.getElementById("agree").checked;
+
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
+
+            if (!selectedGender) {
+                alert("Please select a gender.");
+                return;
+            }
+
+            if (!termsCheckbox) {
+                alert("You must agree to the Terms and Conditions.");
+                return;
+            }
+
+            // Create a JSON object with username and gender
+            const userData = {
+                username: username,
+                gender: selectedGender.value
+            };
+
+            alert('Account created successfully')
+            // Send the JSON data to the server
+            // socket.emit('user join', userData);
+            // currentUsername = username;
+            // // Hide auth section and show chat rooms
+            // document.getElementById('user-auth').classList.add('hidden');
+            // roomsContainer.classList.remove('hidden');
+
+            alert(`Welcome, ${username}!\nGender: ${selectedGender.value}\nAgreed to Terms: Yes`);
+        });
 
 
         // Join chat when user submits username
