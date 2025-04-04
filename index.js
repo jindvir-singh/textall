@@ -3,8 +3,16 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { join } from 'path';
-import {_connection} from './connection.js'
-import router from './routes/userAccount.js';
+import {_connectToDB} from './connection.js'
+// app.js or server.js
+import createAccountRouter from './routes/createAccountRouter.js';
+import loginAccountRouter from './routes/loginAccountRouter.js';
+import getAllUsersRouter from './routes/getAllUsersRouter.js';
+
+
+import cookieParser from 'cookie-parser';
+import { generateToken, authenticateJWT, requireAuth, logoutUser } from './middlewares/auth.js'
+
 // Load environment variables
 dotenv.config();
 
@@ -12,19 +20,40 @@ const PORT = process.env.PORT || 3000; // Use default port if not set
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
+app.use(cookieParser());
 
-_connection();
+
+_connectToDB();
 // Store rooms and their members in memory
 let rooms = {};  // Object to store room info
 let users = {};  // Object to store user info
 
 app.use('/assets', express.static('assets'));
+app.use(express.static(join(process.cwd(), 'public')));
 
-app.get('/', (req, res) => {
-    res.sendFile(join(process.cwd(), 'views', 'index.html')); // Serve the HTML page
+app.use(express.json());
+
+app.get('/', authenticateJWT, (req, res) => {
+    res.sendFile(join(process.cwd(), 'views', 'index.html'));
 });
 
-app.post('/createAccount', router)
+// Serve dashboard only if authenticated
+app.get('/userDashboard', requireAuth, (req, res) => {
+    res.sendFile(join(process.cwd(), 'views', 'personalAccount.html'));
+});
+
+app.use('/userDashboard', getAllUsersRouter);
+
+
+app.use('/createAccount', createAccountRouter);
+app.use('/loginAccount', loginAccountRouter);
+
+// Logout route
+app.get('/logout', (req, res) => {
+    logoutUser(res);
+    res.redirect('/');
+});
+
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log('a user connected');

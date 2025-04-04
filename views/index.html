@@ -63,7 +63,7 @@
             /* Adjust this value to move it more to the right */
             transform: translate(-50%, -50%);
         }
-
+        #user-login,
         #user-auth,
         #user-create {
             text-align: center;
@@ -120,10 +120,14 @@
         }
 
         /* Input and Button Styling */
+        #login-username,
+        #login-password,
         #signup-username,
         #username,
         #email,
-        #password {
+        #password,
+        #emailSignup,
+        #passwordSignup {
             padding: 1rem;
             border-radius: 8px;
             border: none;
@@ -139,7 +143,7 @@
             /* Disables background transition */
         }
 
-       
+
 
         #room-name {
             padding: 1rem;
@@ -186,7 +190,7 @@
             border: none;
         }
 
-        #create-account-btn {
+        #create-account-btn, #login-account-btn {
             background-color: #4f8deb;
             color: white;
             padding: 0.8rem;
@@ -488,7 +492,7 @@
 
 
         #personal-account,
-        #anonymous-account {
+        #anonymous-account,#login-account {
             color: white;
             padding: 15px 30px;
             font-size: 16px;
@@ -527,6 +531,14 @@
         #anonymous-account:hover {
             background-color: #218838;
         }
+
+        #login-account {
+            background-color: #2841a7;
+        }
+
+        #login-account:hover {
+            background-color: #1a2f83;
+        }
     </style>
 </head>
 
@@ -542,14 +554,15 @@
                 autoplay></dotlottie-player>
             <button id="personal-account">Create Account</button>
             <button id="anonymous-account">Chat Anonymous Now</button>
+            <button id="login-account">Login</button>
         </div>
 
 
         <div id="user-create" class="hidden">
             <img src="../assets/user-icon.png" height="75" width="75" />
             <input type="text" id="signup-username" placeholder="Enter your username" />
-            <input type="email" id="email" placeholder="Enter your email" />
-            <input type="password" id="password" placeholder="Enter your password" />
+            <input type="email" id="emailSignup" placeholder="Enter your email" />
+            <input type="password" id="passwordSignup" placeholder="Enter your password" />
             <div class="gender-container">
                 <label class="gender-title">Gender:</label>
 
@@ -573,6 +586,15 @@
                 </label>
             </div> -->
             <button id="create-account-btn">Signup</button>
+            <button class="back-btn" onclick="backButtonFunction()">Go Back</button>
+
+        </div>
+
+        <div id="user-login" class="hidden">
+            <img src="../assets/user-icon.png" height="75" width="75" />
+            <input type="text" id="login-username" placeholder="Enter your username" />
+            <input type="password" id="login-password" placeholder="Enter your password" />
+            <button id="login-account-btn">Login</button>
             <button class="back-btn" onclick="backButtonFunction()">Go Back</button>
 
         </div>
@@ -654,9 +676,12 @@
         const leaveRoom = document.getElementById("leave-room");
         const createPersonalAccount = document.getElementById("personal-account");
         const joinAnonymousAccount = document.getElementById("anonymous-account");
+        const loginAccount = document.getElementById("login-account");
         const goBackButton = document.querySelector(".back-btn"); // Selects the first element with this class
         const signupAccountButton = document.getElementById("create-account-btn");
+        const loginAccountButton = document.getElementById("login-account-btn");
         const signupUserDiv = document.getElementById("user-create");
+        const loginUserDiv = document.getElementById("user-login");
 
         const selectedGender = document.querySelector('input[name="gender"]:checked');
         const termsCheckbox = document.getElementById("agree").checked;
@@ -680,12 +705,13 @@
             removeBg();
         })
         // goBackButton.addEventListener('click', () => {
-        
+
         // });
 
-        function backButtonFunction(){
+        function backButtonFunction() {
             document.getElementById('user-auth').classList.add('hidden');
             signupUserDiv.classList.add('hidden');
+            loginUserDiv.classList.add('hidden');
             document.getElementById('account-options').classList.remove('hidden');
             addBg();
         }
@@ -693,6 +719,11 @@
 
         createPersonalAccount.addEventListener('click', () => {
             signupUserDiv.classList.remove('hidden');
+            document.getElementById('account-options').classList.add('hidden');
+            removeBg();
+        })
+        loginAccount.addEventListener('click', () => {
+            loginUserDiv.classList.remove('hidden');
             document.getElementById('account-options').classList.add('hidden');
             removeBg();
         })
@@ -714,13 +745,26 @@
             }
         });
 
-        signupAccountButton.addEventListener('click', () => {
-            const username = usernameInput.value.trim();
+
+        signupAccountButton.addEventListener('click', async () => {
+            const username = document.getElementById('signup-username').value.trim();
             const selectedGender = document.querySelector('input[name="gender"]:checked');
+            const email = document.getElementById('emailSignup').value.trim();
+            const password = document.getElementById('passwordSignup').value.trim();
             const termsCheckbox = document.getElementById("agree").checked;
 
             if (!username) {
                 alert("Please enter a username.");
+                return;
+            }
+
+            if (!email) {
+                alert("Please enter an email.");
+                return;
+            }
+
+            if (!password) {
+                alert("Please enter a password.");
                 return;
             }
 
@@ -729,26 +773,87 @@
                 return;
             }
 
-            if (!termsCheckbox) {
-                alert("You must agree to the Terms and Conditions.");
-                return;
-            }
 
-            // Create a JSON object with username and gender
             const userData = {
-                username: username,
+                username,
+                email,
+                password,
                 gender: selectedGender.value
             };
 
-            alert('Account created successfully')
-            // Send the JSON data to the server
-            // socket.emit('user join', userData);
-            // currentUsername = username;
-            // // Hide auth section and show chat rooms
-            // document.getElementById('user-auth').classList.add('hidden');
-            // roomsContainer.classList.remove('hidden');
+            try {
+                const response = await fetch('http://127.0.0.1:8989/createAccount', {  // Adjust port if necessary
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
 
-            alert(`Welcome, ${username}!\nGender: ${selectedGender.value}\nAgreed to Terms: Yes`);
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`Welcome, ${result.username}!\nGender: ${result.gender}\nAgreed to Terms: Yes`);
+                    signupUserDiv.classList.add('hidden');
+                    loginUserDiv.classList.remove('hidden');
+
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create account. Try again later.');
+            }
+        });
+
+
+
+        //login-user
+        loginAccountButton.addEventListener('click', async () => {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
+
+
+            if (!password) {
+                alert("Please enter a password.");
+                return;
+            }
+
+
+
+            const userData = {
+                username,
+                password
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8989/loginAccount', {  // Adjust port if necessary
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    // alert(`Welcome, ${result.username}!\nGender: ${result.gender}\nAgreed to Terms: Yes`);
+                    fetch('/userDashboard')
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.href = "/userDashboard"; // Redirect to new page
+                            } else {
+                                console.error("Failed to load the page.");
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to create account. Try again later.');
+            }
         });
 
 
