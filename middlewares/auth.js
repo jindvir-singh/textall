@@ -8,7 +8,7 @@ const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
 // Generate JWT token
 export function generateToken(userId) {
-    return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '1h' });
+    return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '10h' });
 }
 
 // Middleware to check authentication via JWT

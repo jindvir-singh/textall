@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Inter", sans-serif;
             background: #ffffff;
             color: #000000;
             display: flex;
@@ -21,16 +23,27 @@
             background: #f0f0f0;
             padding: 20px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .chat-container {
             width: 70%;
             display: flex;
             flex-direction: column;
-            background: #e0e0e0;
+            background: white;
             padding: 20px;
             display: none;
             position: relative;
+        }
+
+        #chat-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            margin: 0;
         }
 
         .user {
@@ -48,13 +61,20 @@
             background: #ccc;
         }
 
+
         .messages {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-start;
+            /* default for received */
+            gap: 5px;
             flex-grow: 1;
             overflow-y: auto;
             padding: 10px;
             border-radius: 10px;
-            background: #fff;
+            background: #f3f3f3;
         }
+
 
         .message-input {
             display: flex;
@@ -67,6 +87,8 @@
             padding: 10px;
             border-radius: 5px;
             border: none;
+            background: #f3f3f3;
+
         }
 
         button {
@@ -75,18 +97,37 @@
             border-radius: 5px;
             cursor: pointer;
             background: transparent;
-
         }
 
-        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+        }
 
         .call-buttons {
-            position: absolute;
-            top: 10px;
-            right: 140px;
             display: flex;
             gap: 10px;
         }
+
+        .message-bubble {
+            border-radius: 12px 12px 0px 12px;
+            padding: 10px 30px;
+            margin: 5px 0;
+            background-color: #dddddd;
+            align-self: flex-end;
+            /* align this message to the right */
+            text-align: end;
+            width: fit-content;
+            max-width: 80%;
+            /* avoid overflow */
+        }
+
 
         .close-chat {
             position: absolute;
@@ -99,35 +140,12 @@
             font-size: 20px;
         }
 
-        .theme-toggle,
-        .settings-button,
-        .logout-button {
-            position: absolute;
-            top: 10px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: inherit;
-            font-size: 20px;
-        }
-
-        .theme-toggle {
-            right: 100px;
-        }
-
-        .settings-button {
-            right: 140px;
-        }
-
-        .logout-button {
-            right: 60px;
-        }
-
         .settings-menu {
+
             display: none;
             position: absolute;
-            top: 50px;
-            right: 20px;
+            bottom: 10%;
+            left: 1.5%;
             background: #e0e0e0;
             padding: 15px;
             border-radius: 10px;
@@ -140,7 +158,16 @@
             padding: 5px;
         }
 
-        /* Dark Mode Overrides */
+        .settings-menu button {
+            /* background: #bbb; */
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 5px;
+            cursor: pointer;
+            border: none;
+            color: #000;
+        }
+
         body.dark-mode {
             background: #121212;
             color: white;
@@ -166,96 +193,545 @@
         body.dark-mode .settings-menu {
             background: #1e1e1e;
         }
+
+        body.dark-mode .settings-menu button {
+            background: #333;
+            color: white;
+        }
+
+        .video-container {
+            z-index: 111;
+            position: absolute;
+            width: 90%;
+            height: 90vh;
+            /* margin: 5%; */
+            border-radius: 24px;
+            background-color: #27272763;
+            overflow: hidden;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #localVideo {
+            position: absolute;
+            width: 200px;
+            height: 120px;
+            bottom: 20px;
+            right: 20px;
+            border: 2px solid white;
+            border-radius: 10px;
+            cursor: grab;
+            object-fit: cover;
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .incoming-call {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .call-box {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 250px;
+            font-family: sans-serif;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .call-box p {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+
+        .call-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: space-between;
+            flex-direction: column;
+        }
+
+        .accept-call,
+        .reject-call {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .accept-call {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .reject-call {
+            background-color: #f44336;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-    <button class="logout-button" onclick="logout()">
-        <img id="logout-icon" src="../assets/Close Square.svg" alt="Logout Icon" width="24" height="24">
-    </button>
-    <button class="settings-button" onclick="toggleSettingsMenu()">
-        <img id="setting-icon" src="../assets/Setting.svg" alt="setting Icon" width="24" height="24">
-    </button>
+    <audio id="ringtone" src="/assets/incoming-rigntone.mp3" loop style="display: none;"></audio>
+
+    <div class="video-container hidden">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" autoplay muted playsinline class="draggable"></video>
+    </div>
+
     <div class="settings-menu" id="settings-menu">
-        <h3>Settings</h3>
-        <label>Username: <input type="text" id="username" placeholder="Enter username"></label>
-        <label>Phone: <input type="text" id="phone" placeholder="Enter phone number"></label>
-        <button onclick="saveSettings()">Save</button>
-    </div>
-    <div class="sidebar">
-        <h2>Chats</h2>
-        <div id="users-list"></div>
-    </div>
-    <div class="chat-container" id="chat-container">
-        <button class="close-chat" onclick="closeChat()">
-            <img id="closd-icon" src="../assets/Close Square.svg" alt="close Icon" width="24" height="24">
+        <button class="user-profile">
+            <img id="user-icon" src="../assets/Profile.svg" alt="Profile Icon" width="24" height="24">
+
+        </button><br>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <img id="theme-icon" src="../assets/Star 7.svg" alt="Logout Icon" width="24" height="24">
+
+        </button><br>
+        <button class="logout-button" onclick="logout()">
+            <img id="logout-icon" src="../assets/Logout.svg" alt="Logout Icon" width="24" height="24">
 
         </button>
-        <div class="call-buttons">
-            <button onclick="startVideoCall()">
-                <img id="video-icon" src="../assets/Video.svg" alt="video Icon" width="24" height="24">
-            </button>
-            <button onclick="startAudioCall()">
-                <img id="audio-icon" src="../assets/Call.svg" alt="audio Icon" width="24" height="24">
+    </div>
 
+    <div class="incoming-call" style="display: none;">
+        <div class="call-box">
+            <p><strong>Incoming Call</strong> from <span id="caller-name">Unknown</span></p>
+            <div class="call-actions">
+                <button class="accept-call" onclick="acceptCall()">Accept</button>
+                <button class="reject-call" onclick="rejectCall()">Reject</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="sidebar">
+        <div>
+            <h2 style="margin-top: 20px;">All Users</h2>
+            <div id="users-list"></div>
+            <h2>Friends</h2>
+            <div id="friends-list"></div>
+
+        </div>
+
+        <div style="margin-top: 20px; text-align: center; border-radius: 10px; background: #ddd;">
+            <button class="settings-button" onclick="toggleSettingsMenu()"
+                style="display: flex; align-items: center; gap: 5px;">
+                <img src="../assets/Setting.svg" alt="Setting Icon" width="24" height="24">
+                <span>Settings</span>
             </button>
         </div>
-        <h2 id="chat-user">Chat</h2>
+    </div>
+
+
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <h2 id="chat-user">
+                <img src="../assets/Profile.svg" alt="Profile Icon" width="24" height="24" class="profile-icon">
+                <span id="chat-username">Chat</span>
+            </h2>
+
+            <div class="call-buttons">
+                <button onclick="startVideoCall()">
+                    <img id="video-icon" src="../assets/Video.svg" alt="video Icon" width="24" height="24">
+                </button>
+                <button onclick="startAudioCall()">
+                    <img id="audio-icon" src="../assets/Call.svg" alt="audio Icon" width="24" height="24">
+                </button>
+                <button onclick="closeChat()">
+                    <img id="closd-icon" src="../assets/Close Square.svg" alt="close Icon" width="24" height="24">
+                </button>
+            </div>
+        </div>
+
         <div class="messages" id="messages"></div>
         <div class="message-input">
             <input type="text" id="message" placeholder="Type a message...">
             <button onclick="sendMessage()">
                 <img id="send-icon" src="../assets/Send.svg" alt="send Icon" width="24" height="24">
-
             </button>
             <input type="file" id="file-input" style="display:none;">
             <button onclick="document.getElementById('file-input').click();">
                 <img id="file-icon" src="../assets/Paper.svg" alt="file Icon" width="24" height="24">
-                
             </button>
         </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+
     <script>
-        async function fetchAndRenderUsers() {
-            try {
-                const response = await fetch('/userDashboard/all');
-                const users = await response.json();
-                const userList = document.getElementById("users-list");
-                userList.innerHTML = "";
+        const ringtone = document.getElementById("ringtone");
 
-                const currentUsername = await getCurrentUsername();
+        const container = document.querySelector(".video-container");
 
-                users.forEach(user => {
-                    if (user.username !== currentUsername) {
-                        const div = document.createElement("div");
-                        div.className = "user";
-                        div.innerHTML = `<strong>${user.username}</strong>`;
-                        div.onclick = () => openChat(user._id, user.username);
-                        userList.appendChild(div);
-                    }
+        const localVideo = document.getElementById("localVideo");
+
+        let userHasInteracted = false;
+
+        window.addEventListener("click", () => {
+            userHasInteracted = true;
+        });
+        window.addEventListener("keydown", () => {
+            userHasInteracted = true;
+        });
+
+        let selectedUser;
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+
+        localVideo.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            offset.x = e.clientX - localVideo.offsetLeft;
+            offset.y = e.clientY - localVideo.offsetTop;
+            localVideo.style.cursor = "grabbing";
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+
+            const container = document.querySelector(".video-container");
+            const containerRect = container.getBoundingClientRect();
+
+            let x = e.clientX - offset.x;
+            let y = e.clientY - offset.y;
+
+            // Boundaries
+            x = Math.max(0, Math.min(container.clientWidth - localVideo.offsetWidth, x));
+            y = Math.max(0, Math.min(container.clientHeight - localVideo.offsetHeight, y));
+
+            localVideo.style.left = `${x}px`;
+            localVideo.style.top = `${y}px`;
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            localVideo.style.cursor = "grab";
+        });
+
+
+        let localStream, peerConnection;
+        const servers = {
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        };
+        const socket = io(); // assumes you have Socket.IO set up
+
+        socket.on('your-socket-id', (id) => {
+            console.log("My socket ID is:", id);
+            // You can store it for later use
+            window.mySocketId = id;
+        });
+        function showIncomingCall(callerUsername) {
+            document.getElementById("caller-name").textContent = callerUsername;
+            document.querySelector(".incoming-call").style.display = "block";
+
+            if (userHasInteracted) {
+                ringtone.play().catch(err => {
+                    console.warn("Autoplay blocked:", err);
                 });
-            } catch (error) {
-                console.error('Error loading users:', error);
             }
         }
 
+
+
+        async function startVideoCall() {
+
+            container.classList.remove("hidden");
+
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+            localVideo.srcObject = localStream;
+
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit("ice-candidate", {
+                        target: selectedUser,
+                        candidate: event.candidate
+                    });
+                }
+            };
+
+            peerConnection.ontrack = event => {
+                document.getElementById("remoteVideo").srcObject = event.streams[0];
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            socket.emit("offer", {
+                sender: username,
+                target: selectedUser,
+                offer
+            });
+        }
+
+        //         socket.on("connect", () => {
+        //     socket.emit("register-username", username);
+        // });
+        // Handle incoming offer
+        let incomingCall = null;
+
+        socket.on("offer", async ({ senderName, sender, offer }) => {
+            incomingCall = { sender, offer }; // Store the offer for later
+            showIncomingCall(senderName); // Show UI asking to accept/reject
+        });
+
+
+        async function acceptCall() {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+            document.querySelector(".incoming-call").style.display = "none";
+            container.classList.remove("hidden");
+
+            const { sender, offer } = incomingCall;
+
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById("localVideo").srcObject = localStream;
+
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit("ice-candidate", {
+                        target: sender,
+                        candidate: event.candidate
+                    });
+                }
+            };
+
+            peerConnection.ontrack = event => {
+                document.getElementById("remoteVideo").srcObject = event.streams[0];
+            };
+
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+
+            socket.emit("answer", {
+                target: sender,
+                answer
+            });
+
+            incomingCall = null; // Clear stored offer
+        }
+
+        function rejectCall() {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+            document.querySelector(".incoming-call").style.display = "none";
+            socket.emit("call-rejected", { target: incomingCall?.sender });
+            incomingCall = null;
+        }
+
+
+        // Handle answer
+        socket.on("answer", async ({ answer }) => {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        // Handle ICE candidate
+        socket.on("ice-candidate", async ({ candidate }) => {
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+                console.error('Error adding received ICE candidate', err);
+            }
+        });
+
+        async function fetchUsersAndFriends() {
+            const currentUsername = await getCurrentUsername();
+            const res = await fetch('/userDashboard/all');
+            const allUsers = await res.json();
+
+            const friendsRes = await fetch('/userDashboard/friends');
+            const friends = await friendsRes.json();
+
+            const requestsRes = await fetch('/userDashboard/requests');
+            const { requestsSent, requestsReceived } = await requestsRes.json();
+
+            const usersList = document.getElementById("users-list");
+            const friendsList = document.getElementById("friends-list");
+            usersList.innerHTML = "";
+            friendsList.innerHTML = "";
+
+            allUsers.forEach(user => {
+                if (user.username === currentUsername) return;
+
+                const isFriend = friends.some(f => f.username === user.username);
+                const sentRequest = requestsSent.some(r => r.username === user.username);
+                const receivedRequest = requestsReceived.some(r => r.username === user.username);
+
+                const div = document.createElement("div");
+                div.className = "user";
+                div.innerHTML = `<strong>${user.username}</strong>`;
+
+                if (isFriend) {
+                    div.onclick = () => openChat(user._id, user.username);
+                    friendsList.appendChild(div);
+
+                } else if (sentRequest) {
+                    const requestedBtn = document.createElement("button");
+                    requestedBtn.textContent = "Requested";
+                    requestedBtn.disabled = true;
+                    requestedBtn.className = "disabled-request-button";
+                    div.appendChild(requestedBtn);
+                    usersList.appendChild(div);
+
+                } else if (receivedRequest) {
+                    const acceptBtn = document.createElement("button");
+                    acceptBtn.textContent = "Accept";
+                    acceptBtn.onclick = () => respondToRequest(user._id, true);
+
+                    const rejectBtn = document.createElement("button");
+                    rejectBtn.textContent = "Reject";
+                    rejectBtn.onclick = () => respondToRequest(user._id, false);
+
+                    [acceptBtn, rejectBtn].forEach(btn => {
+                        btn.style.marginLeft = "10px";
+                        btn.style.padding = "6px 12px";
+                        btn.style.border = "none";
+                        btn.style.borderRadius = "6px";
+                        btn.style.cursor = "pointer";
+                        btn.style.fontSize = "14px";
+                    });
+
+                    acceptBtn.style.backgroundColor = "#4CAF50";
+                    acceptBtn.style.color = "white";
+
+                    rejectBtn.style.backgroundColor = "#f44336";
+                    rejectBtn.style.color = "white";
+
+                    div.appendChild(acceptBtn);
+                    div.appendChild(rejectBtn);
+                    usersList.appendChild(div);
+
+                } else {
+                    const addBtn = document.createElement("button");
+                    addBtn.textContent = "Add Friend";
+                    addBtn.onclick = () => sendFriendRequest(user._id, currentUsername);
+
+                    addBtn.style.marginLeft = "10px";
+                    addBtn.style.padding = "6px 12px";
+                    addBtn.style.border = "none";
+                    addBtn.style.borderRadius = "6px";
+                    addBtn.style.backgroundColor = "#4CAF50";
+                    addBtn.style.color = "white";
+                    addBtn.style.cursor = "pointer";
+                    addBtn.style.fontSize = "14px";
+
+                    div.appendChild(addBtn);
+                    usersList.appendChild(div);
+                }
+            });
+        }
+
+        async function respondToRequest(senderId, accepted) {
+            try {
+                const res = await fetch('/userDashboard/respond', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderId, accepted })
+                });
+                const data = await res.json();
+                alert(data.message);
+                fetchUsersAndFriends();
+            } catch (error) {
+                console.error("Error responding to request:", error);
+            }
+        }
+        async function sendFriendRequest(receiverId, senderUsername) {
+            console.log("Sending request with:", { receiverId, senderUsername }); // ✅ DEBUG LINE
+
+            try {
+                const res = await fetch('/friends/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderUsername, receiverId })
+                });
+                const data = await res.json();
+                alert(data.message);
+                fetchUsersAndFriends();
+            } catch (error) {
+                console.error("Error sending request:", error);
+            }
+        }
+
+
+        async function acceptFriend(senderId) {
+            try {
+                const res = await fetch('/friends/accept', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderId })
+                });
+                const data = await res.json();
+                alert(data.message);
+                fetchAndRenderUsers();
+            } catch (error) {
+                console.error("Error accepting friend:", error);
+            }
+        }
+
+
+
+        let username = null;
+
         async function getCurrentUsername() {
             try {
-                const res = await fetch('/auth/me');
+                const res = await fetch('/userDashboard/me');
                 if (!res.ok) throw new Error();
                 const data = await res.json();
-                return data.username;
+                return data[0]?.username || null;
             } catch {
                 return null;
             }
         }
 
-        fetchAndRenderUsers();
+        window.addEventListener("load", async () => {
+            username = await getCurrentUsername();
+            if (username) {
+                socket.emit("register-username", username);
+            }
+        });
+
+
+
+        fetchUsersAndFriends();
 
         function openChat(userId, userName) {
+            selectedUser = userName;
             document.getElementById("chat-container").style.display = 'flex';
-            document.getElementById("chat-user").innerText = "Chat with " + userName;
+            document.getElementById("chat-username").innerText = userName.toUpperCase();
             document.getElementById("messages").innerHTML = "";
         }
 
@@ -267,25 +743,27 @@
             const messageBox = document.getElementById("message");
             const messageText = messageBox.value.trim();
             if (messageText === "") return;
+
             const messagesDiv = document.getElementById("messages");
             const messageDiv = document.createElement("div");
+            messageDiv.className = "message-bubble"; // Add this class
             messageDiv.textContent = messageText;
+
             messagesDiv.appendChild(messageDiv);
             messageBox.value = "";
         }
 
-        function startVideoCall() {
-            alert("Starting video call");
-        }
 
-        function startAudioCall() {
-            alert("Starting audio call");
-        }
+        // function startVideoCall() {
+        //     alert("Starting video call");
+        // }
+
+        // function startAudioCall() {
+        //     alert("Starting audio call");
+        // }
 
         function toggleTheme() {
             document.body.classList.toggle("dark-mode");
-            const isDark = document.body.classList.contains("dark-mode");
-            document.querySelector(".theme-toggle").textContent = isDark ? "☀️" : "🌙";
         }
 
         function toggleSettingsMenu() {

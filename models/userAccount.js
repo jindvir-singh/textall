@@ -18,10 +18,22 @@ const userSchema = new mongoose.Schema({
     gender: {
         type: String,
         required: true,
-    }
-});
+    },
+
+    // ✅ Friend System Fields
+    friends: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    requestsSent: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    requestsReceived: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
+}, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
-
-// Export the User model
 export default User;

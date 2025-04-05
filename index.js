@@ -8,10 +8,12 @@ import {_connectToDB} from './connection.js'
 import createAccountRouter from './routes/createAccountRouter.js';
 import loginAccountRouter from './routes/loginAccountRouter.js';
 import getAllUsersRouter from './routes/getAllUsersRouter.js';
+import connectedUsers from './models/peersMap.js';
 
 
 import cookieParser from 'cookie-parser';
 import { generateToken, authenticateJWT, requireAuth, logoutUser } from './middlewares/auth.js'
+import friendsRouter from './routes/friends.js';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +30,7 @@ _connectToDB();
 let rooms = {};  // Object to store room info
 let users = {};  // Object to store user info
 
+
 app.use('/assets', express.static('assets'));
 app.use(express.static(join(process.cwd(), 'public')));
 
@@ -43,7 +46,7 @@ app.get('/userDashboard', requireAuth, (req, res) => {
 });
 
 app.use('/userDashboard', getAllUsersRouter);
-
+app.use('/friends', friendsRouter)
 
 app.use('/createAccount', createAccountRouter);
 app.use('/loginAccount', loginAccountRouter);
@@ -57,9 +60,39 @@ app.get('/logout', (req, res) => {
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log('a user connected');
+    socket.emit('your-socket-id', socket.id);
 
     let currentUser = null;
 
+    socket.on('register-username', (username) => {
+        connectedUsers.set(username, socket.id);
+        console.log(connectedUsers)
+        console.log(`User ${username} registered with socket ID ${socket.id}`);
+    });
+
+    socket.on("offer", ({ sender, target, offer }) => {
+        // Check if target is a known username
+        const targetSocketId = connectedUsers.get(target) || target;
+    
+        if (io.sockets.sockets.get(targetSocketId)) {
+            io.to(targetSocketId).emit("offer", { senderName: sender, sender: socket.id, offer });
+        } else {
+            console.log("Target user/socket not found:", target);
+        }
+    });
+    
+
+    socket.on("answer", ({ target, answer }) => {
+        io.to(target).emit("answer", { sender: socket.id, answer });
+    });
+
+    socket.on("ice-candidate", ({ target, candidate }) => {
+        io.to(target).emit("ice-candidate", { candidate });
+    });
+
+    socket.on("register", userId => {
+        socket.join(userId); // maps socket to userId
+    });
     // User joins chat by providing a username
     // User joins chat by providing a username and gender
     socket.on('user join', (userData) => {
@@ -82,6 +115,8 @@ io.on('connection', (socket) => {
 
         // Send the updated list of rooms
         io.emit('rooms', Object.keys(rooms));  // This sends the updated list of rooms to all clients
+
+
     });
 
     // User sends a message to a specific room
