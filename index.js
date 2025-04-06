@@ -1,4 +1,8 @@
 import express from 'express';
+import https from 'https';
+import fs from 'fs';
+import cors from 'cors';
+
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
@@ -12,7 +16,7 @@ import connectedUsers from './models/peersMap.js';
 
 
 import cookieParser from 'cookie-parser';
-import { generateToken, authenticateJWT, requireAuth, logoutUser } from './middlewares/auth.js'
+import { authenticateJWT, requireAuth, logoutUser } from './middlewares/auth.js'
 import friendsRouter from './routes/friends.js';
 
 // Load environment variables
@@ -20,11 +24,21 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000; // Use default port if not set
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
+const server = https.createServer({
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem'),
+  }, app);
+
+  const io = new Server(server);
 app.use(cookieParser());
 
+app.use(cors({
+    origin: '*',
+    credentials: true // if using cookies or HTTP auth
+}));
 
+
+  
 _connectToDB();
 // Store rooms and their members in memory
 let rooms = {};  // Object to store room info
@@ -70,6 +84,22 @@ io.on('connection', (socket) => {
         console.log(`User ${username} registered with socket ID ${socket.id}`);
     });
 
+
+    socket.on("chat", ({ sender, target, data }) => {
+        const targetSocketId = connectedUsers.get(target) || target;
+    
+        if (io.sockets.sockets.get(targetSocketId)) {
+            io.to(targetSocketId).emit("chat", {
+                senderName: sender,
+                senderSocketId: socket.id,
+                message: data
+            });
+        } else {
+            console.log("Target user/socket not found:", target);
+        }
+    });
+    
+
     socket.on("offer", ({ sender, target, offer }) => {
         // Check if target is a known username
         const targetSocketId = connectedUsers.get(target) || target;
@@ -93,6 +123,15 @@ io.on('connection', (socket) => {
     socket.on("register", userId => {
         socket.join(userId); // maps socket to userId
     });
+
+    socket.on("end-call", ({target}) =>{
+        const targetSocketId = connectedUsers.get(target) || target;
+        if (io.sockets.sockets.get(targetSocketId)) {
+            io.to(targetSocketId).emit("end-call");
+        } else {
+            console.log("Target user/socket not found:", target);
+        }
+    })
     // User joins chat by providing a username
     // User joins chat by providing a username and gender
     socket.on('user join', (userData) => {

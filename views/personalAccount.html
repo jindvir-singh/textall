@@ -64,9 +64,9 @@
 
         .messages {
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column;
+            /* <-- change this */
             align-items: flex-start;
-            /* default for received */
             gap: 5px;
             flex-grow: 1;
             overflow-y: auto;
@@ -74,6 +74,7 @@
             border-radius: 10px;
             background: #f3f3f3;
         }
+
 
 
         .message-input {
@@ -116,17 +117,31 @@
         }
 
         .message-bubble {
-            border-radius: 12px 12px 0px 12px;
             padding: 10px 30px;
             margin: 5px 0;
-            background-color: #dddddd;
-            align-self: flex-end;
-            /* align this message to the right */
-            text-align: end;
+            border-radius: 12px;
             width: fit-content;
             max-width: 80%;
-            /* avoid overflow */
+            word-wrap: break-word;
         }
+
+        /* Sent (your message) */
+        .message-bubble.self {
+            background-color: black;
+            border-radius: 12px 12px 0px 12px;
+            align-self: flex-end;
+            text-align: right;
+            color: white;
+        }
+
+        /* Received (incoming message) */
+        .message-bubble.remote {
+            background-color: #ffffff;
+            border-radius: 12px 12px 12px 0px;
+            align-self: flex-start;
+            text-align: left;
+        }
+
 
 
         .close-chat {
@@ -232,6 +247,33 @@
             z-index: 10;
         }
 
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.304);
+            padding: 10px 20px;
+            border-radius: 12px;
+        }
+
+        .video-controls button {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            padding: 12px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .video-controls button:hover {
+            background: #ddd;
+        }
+
         .hidden {
             display: none;
         }
@@ -305,6 +347,22 @@
     <div class="video-container hidden">
         <video id="remoteVideo" autoplay playsinline></video>
         <video id="localVideo" autoplay muted playsinline class="draggable"></video>
+        <div class="video-controls">
+            <button onclick="toggleMic()">
+                <img id="audio-icon" src="../assets/Mic=On.svg" alt="Audio Icon" width="24" height="24">
+            </button>
+
+            <button id="toggle-video" onclick="toggleCamera()">
+                <img id="video-toggle-icon" src="../assets/Video=On.svg" alt="Toggle Video" width="24" height="24">
+            </button>
+
+            <button id="end-call">
+                <img id="end-call-icon" src="../assets/endCall.svg" alt="Logout Icon" width="24" height="24"
+                    onclick="endCall()">
+
+            </button>
+        </div>
+
     </div>
 
     <div class="settings-menu" id="settings-menu">
@@ -458,6 +516,93 @@
             }
         }
 
+        let isMicOn = true;
+
+        function toggleMic() {
+            if (!localStream) return;
+
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                isMicOn = !isMicOn;
+                audioTrack.enabled = isMicOn;
+
+                const icon = document.getElementById("audio-icon");
+                icon.src = isMicOn ? "../assets/Mic=On.svg" : "../assets/Mic=Off.svg";
+            }
+        }
+
+        let isCameraOn = true;
+
+        function toggleCamera() {
+            if (!localStream) return;
+
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                isCameraOn = !isCameraOn;
+                videoTrack.enabled = isCameraOn;
+
+                // Update icon accordingly
+                const videoIcon = document.getElementById("video-toggle-icon");
+                videoIcon.src = isCameraOn ? "../assets/Video=On.svg" : "../assets/Video=Off.svg";
+            }
+        }
+
+
+        function endCall() {
+            // 1. Close peer connection
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            // 2. Stop local media tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // 3. Clear video elements
+            const localVideo = document.getElementById("localVideo");
+            const remoteVideo = document.getElementById("remoteVideo");
+
+            if (localVideo) localVideo.srcObject = null;
+            if (remoteVideo) remoteVideo.srcObject = null;
+
+            // 4. Hide video container
+            document.querySelector(".video-container").classList.add("hidden");
+
+            // 5. Optionally notify the other peer
+            socket.emit("end-call", { target: selectedUser }); // optional
+
+            console.log("Call ended and resources released");
+        }
+
+        socket.on("end-call", () => {
+            console.log("Call ended by the other user.");
+            endCallCleanup(); // Call your cleanup function
+        });
+
+
+        function endCallCleanup() {
+            // Hide video container
+            document.querySelector(".video-container").classList.add("hidden");
+
+            // Close peer connection
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            // Stop all media tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // Optionally clear video sources
+            document.getElementById("localVideo").srcObject = null;
+            document.getElementById("remoteVideo").srcObject = null;
+        }
 
 
         async function startVideoCall() {
@@ -744,14 +889,33 @@
             const messageText = messageBox.value.trim();
             if (messageText === "") return;
 
+            const msgData = {
+                data: messageText,
+                sender: username,
+                target: selectedUser
+            };
+
+            // Send message to server
+            socket.emit('chat', msgData);
+
+            // Display your own message
             const messagesDiv = document.getElementById("messages");
             const messageDiv = document.createElement("div");
-            messageDiv.className = "message-bubble"; // Add this class
+            messageDiv.className = "message-bubble self"; // Use a different style for self
             messageDiv.textContent = messageText;
-
             messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
             messageBox.value = "";
         }
+        socket.on("chat", ({ senderName, message }) => {
+            const messagesDiv = document.getElementById("messages");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message-bubble remote"; // Style for incoming messages
+            messageDiv.textContent = `${message}`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            messagesDiv.appendChild(messageDiv);
+        });
+
 
 
         // function startVideoCall() {

@@ -782,7 +782,7 @@
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:8989/createAccount', {  // Adjust port if necessary
+                const response = await fetch('/createAccount', {  // Adjust port if necessary
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userData)
@@ -829,7 +829,7 @@
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:8989/loginAccount', {  // Adjust port if necessary
+                const response = await fetch('/loginAccount', {  // Adjust port if necessary
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(userData)

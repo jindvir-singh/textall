@@ -15,3 +15,8 @@ yarn-error.log*
 # Ignore build files (if any)
 dist/
 build/
+
+# Ignore SSL certificates and private keys
+*.pem
+*.key
+*.crt
